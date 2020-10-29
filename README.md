@@ -31,6 +31,11 @@ Design the following database schema containing three tables:
 Build a command-line application that at a minimum allows the user to:
 
   * Add departments, roles, employees
+    ADD DEPT
+    ADD ROLE
+    ADD EMPLOYEE (multi join)
+     
+      
 
   * View departments, roles, employees
 
@@ -86,7 +91,7 @@ How do you deliver this? Here are some guidelines:
 
 * The command-line application should allow users to:
 
-  * Add departments, roles, employees
+  * Add departments, roles, employees(R+D+Manager)
 
   * View departments, roles, employees
 
