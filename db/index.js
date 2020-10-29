@@ -1,6 +1,6 @@
 // connection between JS and MySQL
 
-const connection = require("./employeeDBConnection");
+const connection = require("./employees_trackerDB");
 
 class Database {
     constructor(connection){

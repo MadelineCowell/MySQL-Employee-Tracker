@@ -1,167 +1,178 @@
+const mysql = require('mysql');
+const inquirer = require('inquirer');
 
-const mysql = require("mysql");
-const inquirer = require("inquirer");
-const consoleTable = require("console.table");
-const promisemysql = require("promise-mysql");
+const connection = mysql.createConnection({
+    host: "localhost",
+    port: 3306,
+    user: "root",
+    password: "Madeline",
+    database: "employees_trackerDB"
+});
 
-const Database = require("./db/index");
-
+// connection.connect(function (err) {
+//     if (err) throw err;
+//     initialize()
+// });
 
 // view employee table "View All Employees" to init
-
+initialize();
 
 function initialize() {
+    inquirer.prompt({
+        type: "list",
+        name: "mainMenuAction",
+        message: "What would you like to do?",
+        choices: ["View All Employees", "View All Employees by Department", "View All Employees by Manager", "Add Employee", "Remove Employee", "Update Employee Role", "Update Employee Manager", "View Roles", "Add Role", "Remove Role", "QUIT"]
+    }).then(function (choice) {
+        switch (choice.mainMenuAction) {
+            case "View All Employees":
+                return viewEmployees();
 
-    loadQuestions()
-};
+            case "View All Employees by Department":
+                return viewEmployeesByDept();
 
-function loadQuestions() {
-    const { choice } = await.prompt([
+            case "View All Employees by Manager":
+                return viewEmployeesByManager();
+
+            case "Add Employee":
+                return addEmployee();
+
+            case "Remove Employee":
+                return removeEmployee();
+
+            case "Update Employee Role":
+                return updateEmployeeRole();
+
+            case "Update Employee Manager":
+                return updateEmployeeManager();
+
+            case "View Roles":
+                return viewRoles();
+
+            case "Add Role":
+                return addRole();
+
+            case "Remove Role":
+                return removeRole();
+
+            case "QUIT":
+                return quit();
+        }
+    })
+}
+
+// FUNCTIONS ============================
+function viewEmployees() {
+    var employeeTable = [];
+    var query = "SELECT employee.id, first_name, last_name, title, salary, department_name FROM employee JOIN employee_role ON (employee.role_id = employee_role.id) JOIN department ON (department.id = employee_role.department_id)";
+
+    connection.query(query, function (err, result) {
+        if (err) throw err;
+
+        var employeeArray = [];
+
+
+        for (var i = 0; i < result.length; i++) {
+
+            employeeArray = [];
+
+            employeeArray.push(result[i].id);
+            employeeArray.push(result[i].first_name);
+            employeeArray.push(result[i].last_name);
+            employeeArray.push(result[i].title);
+            employeeArray.push(result[i].salary);
+            employeeArray.push(result[i].department_name);
+
+            console.log(employeeArray);
+
+
+            allEmployeeArray.push(employeeArray);
+
+        }
+        console.log("\n\n\n");
+        console.table(["ID", "First Name", "Last Name", "Role", "Salary", "Department"], employeeTable);
+        console.log("\n\n\n");
+
+        promptQuit();
+    });
+}
+
+// function viewEmployeesByDept();
+
+// function viewEmployeesByManager();
+
+function addEmployee() {
+    const addEmployeeQuestions = [
+        {
+            type: "input",
+            name: "addEmployeeFirst",
+            message: "What is the employee's first name?"
+        },
+        {
+            type: "input",
+            name: "addEmployeeLast",
+            message: "What is the employee's last name?"
+        },
         {
             type: "list",
-            name: "mainMenu",
-            message: "What would you like to do?",
-            choices: [
-                {
-                    name: "View All Employees", // BID
-                    value: "VIEW_EMPLOYEES"
-                },
-                {
-                    name: "View All Employees by Department", //POST
-                    value: "VIEW_EMPLOYEES_BY_DEPARTMENT"
-                },
-                {
-                    name: "View All Employees by Manager", //POST
-                    value: "VIEW_EMPLOYEES_BY_DEPARTMENT"
-                },
-                {
-                    name: "Add Employee",
-                    value: "ADD_EMPLOYEE"
-                },
-                {
-                    name: "Remove Employee",
-                    value: "REMOVE_EMPLOYEE"
-                },
-                {
-                    name: "Update Employee Role",
-                    value: "UPDATE_EMPLOYEE_ROLE"
-                },
-                {
-                    name: "Update Employee Manager",
-                    value: "UPDATE_EMPLOYEE_MANAGER"
-                },
-                {
-                    name: "View All Roles",
-                    value: "VIEW_ROLES"
-                },
-                {
-                    name: "Add Role",
-                    value: "ADD_ROLE"
-                },
-                {
-                    name: "Remove Role",
-                    value: "REMOVE_ROLE"
-                },
-                {
-                    name: "quit",
-                    value: "QUIT"
-                }
-            ]
+            name: "addEmployeeRole",
+            message: "What is the employee's role ID?",
+            // dynamic choices?
+            choices: ["Sales Lead", "Salesperson", "Lead Engineer", "Software Engineer", "Account Manager", "Accountant", "Legal Team Lead"]
+        },
+        {
+            type: "list",
+            name: "managerName",
+            message: "Who is the employee's manager?",
+            // dynamic choices?
+            choices: ["John Doe", "Mike Chan", "Ashley Rodriguez", "Kevin Tupik", "Malia Brown", "Sarah Lourd", "Tom Allen"]
         }
-    ])
-    switch (choice) {
-        case "VIEW_EMPLOYEES":
-            return viewEmployees();
-
-        case "VIEW_EMPLOYEES_BY_DEPARTMENT":
-            return viewEmployeesByDept();
-
-        case "VIEW_EMPLOYEES_BY_MANAGER":
-            return viewEmployeesByManager();
-
-        case "ADD_EMPLOYEE":
-            return addEmployee();
-
-        case "REMOVE_EMPLOYEE":
-            return removeEmployee();
-
-        case "UPDATE_EMPLOYEE_ROLE":
-            return updateEmployeeRole();
-
-        case "UPDATE_EMPLOYEE_MANAGER":
-            return updateEmployeeManager();
-
-        case "VIEW_ROLES":
-            return viewRoles();
-
-        case "ADD_ROLE":
-            return addRole();
-
-        case "REMOVE_ROLE":
-            return removeRole();
-
-        case "QUIT":
-            return quit();
-    }
+    ]
+    inquirer.prompt(addEmployeeQuestions).then(function(answer) {
+        connection.query("INSERT INTO employee SET ?", {
+            first_name: answer.addEmployeeFirst.addEmployeeFirst,
+            last_name: answer.addEmployeeLast,
+            role_id: answer.addEmployeeFirstRole
+        });
+        console.log("Added new employee to database!");
+    })
+    // initialize(); ***figure out a way to restart/quit menu***
 }
 
-async function viewEmployees() {
-    const employees = await Database.findAllEmployees()
-    console.table(employees)
-    console.log(employees)
-    loadQuestions()
-}
+// function removeEmployee();
 
-// async function addEmployee() {
+// function updateEmployeeRole();
+
+// function updateEmployeeManager();
+
+// function viewRoles();
+
+// function addRole();
+
+// function removeRole();
+
+// function quit();
 
 
+
+// async function removeEmployee() {
+//     const employees = await Database.findAllEmployees()
+//     const employeeChoices = employees.map(({ id, first_name, last_name }) => ({
+//         name: `${first_name} ${last_name}`, value: id
+
+//     }))
+//     const { removeEmployeeID } = await prompt([
+//         {
+//             type: "list",
+//             name: "removeEmployeeID",
+//             message: "Which employee would you like to remove?",
+//             choices: employeeChoices
+//         }
+//     ])
+//     await Database.removeEmployee(removeEmployeeID)
+//     console.log("Removed employee from database!")
+//     loadQuestions()
 // }
-
-// const addEmployeeQuestions = [
-//     {
-//         type: "input",
-//         name: "addEmployeeFirst",
-//         message: "What is the employee's first name?"
-//     },
-//     {
-//         type: "input",
-//         name: "addEmployeeLast",
-//         message: "What is the employee's last name?"
-//     },
-//     {
-//         type: "list",
-//         name: "addEmployeeRole",
-//         message: "What is the employee's role?",
-//         // dynamic choices?
-//         choices: ["Sales Lead", "Salesperson", "Lead Engineer", "Software Engineer", "Account Manager", "Accountant", "Legal Team Lead"]
-//     },
-//     {
-//         type: "list",
-//         name: "managerName",
-//         message: "Who is the employee's manager?",
-//         // dynamic choices?
-//         choices: ["John Doe", "Mike Chan", "Ashley Rodriguez", "Kevin Tupik", "Malia Brown", "Sarah Lourd", "Tom Allen"]
-//     };
-// ];
-
-async function removeEmployee() {
-    const employees = await Database.findAllEmployees()
-    const employeeChoices = employees.map(({ id, first_name, last_name }) => ({
-        name: `${first_name} ${last_name}`, value: id
-
-    }))
-    const { removeEmployeeID } = await prompt([
-        {
-            type: "list",
-            name: "removeEmployeeID",
-            message: "Which employee would you like to remove?",
-            choices: employeeChoices
-        }
-    ])
-    await Database.removeEmployee(removeEmployeeID)
-    console.log("Removed employee from database!")
-    loadQuestions()
-}
 
 
 
@@ -184,7 +195,6 @@ async function removeEmployee() {
 // ]
 
 // function updateManager() {
-//     //===========
 // }
 
 // const updateManagerQuestions = [
@@ -202,7 +212,4 @@ async function removeEmployee() {
 // }
 // ]
 
-// ]
-
-
-initialize();
+// 
