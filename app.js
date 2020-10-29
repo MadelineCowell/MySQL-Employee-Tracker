@@ -139,7 +139,28 @@ function addEmployee() {
     // initialize(); ***figure out a way to restart/quit menu***
 }
 
-// function removeEmployee();
+function removeEmployee() {
+    const removeEmployeeQuestions = [
+        {
+            type: "input",
+            name: "removeEmployeeFirst",
+            message: "What is the employee's first name?"
+        },
+        {
+            type: "input",
+            name: "removeEmployeeLast",
+            message: "What is the employee's last name?"
+        }
+    ]
+    inquirer.prompt(removeEmployeeQuestions).then(function(answer) {
+        connection.query("DELETE FROM employee WHERE first_name = ? and last_name = ?"[answer.removeEmployeeFirst, answer.removeEmployeeLast], 
+        function (err) {
+            if (err) throw err;
+        });
+        console.log("Removed employee from the database.");
+    })
+    // initialize(); ***figure out a way to restart/quit menu***
+}
 
 // function updateEmployeeRole();
 
